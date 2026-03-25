@@ -1,3 +1,9 @@
+// echo-client は Echo gRPC サービスを呼び出すサンプルクライアントのエントリポイントである。
+//
+// 接続先は直接の host:port ではなく、カスタムスキーム myscheme とサービス名 myecho を組み合わせた
+// target（例: grpc.Dial("myscheme:///myecho", ...)）で、名前解決は Name サービスと GetNameResolver 経由で行う。
+//
+// 接続は client_pool によりプールされ、Unary 呼び出しを複数回行うデモになっている。
 package main
 
 import (
@@ -13,9 +19,17 @@ import (
 )
 
 var (
+	// addr は直接ダイアル用のフラグ（現在コメントアウトされた Dial パス向け）。既定は未使用に近い。
 	addr = flag.String("addr", "localhost:50051", "the address to connect to")
 )
 
+// getOptions は grpc.Dial に渡すクライアント設定を構成する。
+//
+//   - mTLS: クライアント証明書 + CA によるサーバー検証
+//   - Unary / Stream インターセプタ: PerRPC 資格情報の有無をデバッグ出力するサンプル
+//   - WithPerRPCCredentials: OAuth2 静的トークンを各 RPC に載せる（サーバー側 interceptor と一致させる）
+//   - カスタム Resolver: 名前サービスから実アドレスを取得
+//   - keepalive クライアントパラメータ
 func getOptions() []grpc.DialOption {
 	var opts []grpc.DialOption
 	//opts = append(opts, client.GetTlsOpt())
@@ -31,7 +45,7 @@ func getOptions() []grpc.DialOption {
 func main() {
 	//flag.Parse()
 	//conn, err := grpc.Dial(*addr, getOptions()...)
-	//根据 协议 + 服务名 通过名称服务解析，访问服务器
+	// プロトコルとサービス名でネームサービス経由に解決し、サーバーへ接続する
 	//conn, err := grpc.Dial(fmt.Sprintf("%s:///%s", client.MyScheme, client.MyServiceName), getOptions()...)
 
 	pool, err := client_pool.GetPool(fmt.Sprintf("%s:///%s", client.MyScheme, client.MyServiceName), getOptions()...)

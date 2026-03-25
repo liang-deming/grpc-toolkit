@@ -1,3 +1,5 @@
+// client パッケージは Echo サービスの各 RPC を呼び出すヘルパー関数を提供する。
+// ファイル入出力を伴うストリーミング系は echo-client/file 配下のパスを参照する。
 package client
 
 import (
@@ -15,6 +17,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// CallUnary は UnaryEcho を 1 回呼び出す。
+// コンテキストは 1 秒タイムアウト。PerRPCCredentials で Authorization を付与し、サーバー側検証と整合させる。
 func CallUnary(client echo.EchoServiceClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -32,6 +36,8 @@ func CallUnary(client echo.EchoServiceClient) {
 	fmt.Printf("client recv: %v\n", res.Message)
 }
 
+// CallServerStreamingEcho は ServerStreamingEcho を呼び、サーバーから送られる画像チャンクを
+// タイムスタンプ付きファイルに書き込む。ストリーム終了は io.EOF で検知する。
 func CallServerStream(client echo.EchoServiceClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -64,6 +70,8 @@ func CallServerStream(client echo.EchoServiceClient) {
 	}
 }
 
+// CallClientStream はクライアントストリーミング RPC。client.jpg を読み、チャンクを Send し、
+// CloseAndRecv でサーバーの最終レスポンスを受け取る。
 func CallClientStream(client echo.EchoServiceClient) {
 	filepath := "echo-client/file/client.jpg"
 	file, err := os.Open(filepath)
@@ -104,6 +112,8 @@ func CallClientStream(client echo.EchoServiceClient) {
 	fmt.Printf("client recv: %v\n", res.Message)
 }
 
+// CallBidirectional は双方向ストリーミング。送信ゴルーチンで client.jpg を送り、
+// 受信ゴルーチンでサーバーからの画像をファイルに保存する。CloseSend で送信側を閉じる。
 func CallBidirectional(client echo.EchoServiceClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

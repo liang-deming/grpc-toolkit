@@ -1,26 +1,48 @@
 syntax = "proto3";
+
+// Echo のサンプル gRPC サービス定義。
+// Unary / サーバーストリーミング / クライアントストリーミング / 双方向ストリーミングの
+// 4 パターンを一通り試すためのメッセージと RPC をまとめている。
 package grpc.echo;
+
 import "google/protobuf/timestamp.proto";
+
 option go_package = "grpcv2/echo";
 
+// クライアントからサーバーへ送るリクエスト。
+// テキスト・バイナリ・長さ・時刻を載せられるようにしており、ストリーム系では画像チャンク等の送受信に利用する。
 message EchoRequest {
-    string message = 1;
-    bytes bytes=2;
-    int32 length=3;
-    google.protobuf.Timestamp timestamp=4;
+  // 人間可読なメッセージ文字列（Unary やログ用）。
+  string message = 1;
+  // 任意のバイナリ（画像チャンクなど）。ストリーミング RPC で分割送信する想定。
+  bytes bytes = 2;
+  // 当該チャンクのバイト長。検証やデバッグ用。
+  int32 length = 3;
+  // 送信時刻。クライアントが付与し、サーバー側でログ出力等に使える。
+  google.protobuf.Timestamp timestamp = 4;
 }
 
+// サーバーからクライアントへ返すレスポンス。
+// EchoRequest と同様のフィールド構成で、エコー内容やストリームの各フレームを表す。
 message EchoResponse {
-    string message = 1;
-    bytes bytes=2;
-    int32 length=3; 
-    google.protobuf.Timestamp timestamp=4;
+  string message = 1;
+  bytes bytes = 2;
+  int32 length = 3;
+  google.protobuf.Timestamp timestamp = 4;
 }
 
+// Echo サービス: 4 種類の RPC 呼び出しパターンを提供する。
 service EchoService {
-    rpc UnaryEcho (EchoRequest) returns (EchoResponse);
-    rpc ServerStreamingEcho (EchoRequest) returns (stream EchoResponse);
-    rpc ClientStreamingEcho (stream EchoRequest) returns (EchoResponse);
-    rpc BidirectionalStreamingEcho (stream EchoRequest) returns (stream EchoResponse);
-}
+  // 単一リクエストに対し単一レスポンスを返す典型的な Unary RPC。
+  rpc UnaryEcho (EchoRequest) returns (EchoResponse);
 
+  // 1 リクエストに対し複数レスポンスを順次返すサーバーストリーミング。
+  // 例: サーバーがファイルを読みチャンクで送信する。
+  rpc ServerStreamingEcho (EchoRequest) returns (stream EchoResponse);
+
+  // 複数リクエストをストリームで受け取り、最後に 1 回だけレスポンスを返すクライアントストリーミング。
+  rpc ClientStreamingEcho (stream EchoRequest) returns (EchoResponse);
+
+  // リクエストとレスポンスの両方がストリームの双方向ストリーミング。
+  rpc BidirectionalStreamingEcho (stream EchoRequest) returns (stream EchoResponse);
+}

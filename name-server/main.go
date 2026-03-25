@@ -1,3 +1,6 @@
+// name-server は Name gRPC サービス（サービス名→アドレス一覧のレジストリ）のエントリポイント。
+// インメモリの name_store に対し、Register / GetAddress 等の RPC を処理する。
+// Echo サーバーが起動時に Register し、Echo クライアントの resolver が GetAddress で取得する、という流れに使う。
 package main
 
 import (
@@ -34,8 +37,9 @@ func main() {
 
 }
 
+// testdata は手動で store に登録し、GetByServiceName の結果を確認するデバッグ用関数。
 func testdata() {
-	// 最终在 NameServer 的内存里形成这样的数据：
+	// 最終的に NameServer のメモリ上に次のようなデータができる：
 	server.Register("myecho", "localhost:50051")
 	alldata := server.GetAllData()
 	fmt.Println(alldata)

@@ -22,13 +22,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NameClient interface {
-	// 注册
+	// 登録
 	Register(ctx context.Context, in *NameRequest, opts ...grpc.CallOption) (*NameResponse, error)
-	// 删除
+	// 削除
 	Delete(ctx context.Context, in *NameRequest, opts ...grpc.CallOption) (*NameResponse, error)
 	// 保活
 	Keepalive(ctx context.Context, opts ...grpc.CallOption) (Name_KeepaliveClient, error)
-	// 获取
+	// 取得
 	GetAddress(ctx context.Context, in *NameRequest, opts ...grpc.CallOption) (*NameResponse, error)
 }
 
@@ -105,13 +105,13 @@ func (c *nameClient) GetAddress(ctx context.Context, in *NameRequest, opts ...gr
 // All implementations must embed UnimplementedNameServer
 // for forward compatibility
 type NameServer interface {
-	// 注册
+	// 登録
 	Register(context.Context, *NameRequest) (*NameResponse, error)
-	// 删除
+	// 削除
 	Delete(context.Context, *NameRequest) (*NameResponse, error)
 	// 保活
 	Keepalive(Name_KeepaliveServer) error
-	// 获取
+	// 取得
 	GetAddress(context.Context, *NameRequest) (*NameResponse, error)
 	mustEmbedUnimplementedNameServer()
 }

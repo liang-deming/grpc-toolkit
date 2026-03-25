@@ -1,14 +1,19 @@
+// サービス名からエンドポイントアドレスへのインメモリレジストリ。
+// キーは serviceName、値は address 文字列をキーとした map（同一サービスに複数アドレスを登録可能）。
+// 並行アクセスは RWMutex で保護する。
 package server
 
 import (
 	"sync"
 )
 
+// Address は 1 つの登録エントリ（現状はデバッグ用フィールドが多い）。
 type Address struct {
 	serviceName string
 	addr        string
 }
 
+// nameStore はグローバルな serviceNameData が指す実体。
 type nameStore struct {
 	data       map[string]map[string]*Address
 	dataLocker sync.RWMutex
@@ -23,6 +28,7 @@ func init() {
 
 }
 
+// Register は serviceName に対し address を 1 件追加する。同一 address の重複は map により上書きと同様の動作。
 func Register(serviceName, address string) {
 	ns := serviceNameData
 	addr := &Address{
@@ -40,11 +46,13 @@ func Register(serviceName, address string) {
 
 }
 
+// GetAllData はデバッグ用にストア全体へのポインタを返す。本番では公開しない方がよい。
 func GetAllData() *nameStore {
 	return serviceNameData
 }
 
-// 根据服务名称获取地址信息
+// GetByServiceName はサービス名に基づきアドレス情報を取得する。
+// 登録された全アドレスの文字列スライスを返す。未登録なら空スライス。
 func GetByServiceName(serviceName string) []string {
 	ns := serviceNameData
 	ns.dataLocker.RLock()

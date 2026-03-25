@@ -1,3 +1,5 @@
+// gRPC クライアント側の keepalive パラメータ。
+// サーバー側の EnforcementPolicy（特に MinTime）と矛盾しないよう間隔を調整することが重要。
 package client
 
 import (
@@ -7,13 +9,15 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
+// GetKeepaliveOpt は grpc.WithKeepaliveParams に渡す ClientParameters を構築する。
+// Time: ping 送信間隔、Timeout: ping に対する ACK の待ち時間、PermitWithoutStream: RPC が無いときも ping するか。
 func GetKeepaliveOpt() (opt grpc.DialOption) {
 	var kacp = keepalive.ClientParameters{
-		// 如果没有活动流，则每10s发送一次ping
+		// アクティブなストリームがない場合、10秒ごとに ping を送る
 		Time: 10 * time.Second,
-		// ping 超时时长
+		// ping のタイムアウト時間
 		Timeout: time.Second,
-		//当没任何活动流的情况下，是否允许被ping
+		// アクティブなストリームがない場合でも ping を受け入れるか
 		PermitWithoutStream: true,
 	}
 	return grpc.WithKeepaliveParams(kacp)

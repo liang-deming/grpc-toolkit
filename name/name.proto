@@ -1,21 +1,36 @@
 syntax = "proto3";
+
+// サービス名解決（サービスディスカバリ）用の軽量 gRPC API。
+// Echo サーバー等が自分の listen アドレスを登録し、クライアントがサービス名から
+// 実際の接続先アドレス一覧を取得する、という用途を想定している。
 option go_package = "grpcv2/name";
-package  grpc.name;
+
+package grpc.name;
+
+// 名前サービスへのリクエスト。
+// Register / Delete / Keepalive / GetAddress で共通利用する。
 message NameRequest {
+  // 論理サービス名（例: "myecho"）。resolver のエンドポイント名と対応させる。
+  string service_name = 1;
+  // そのサービスに紐づく実アドレス文字列の一覧（ホスト:ポート 等）。
+  // Register 時は登録するアドレス、Keepalive では同様の意味で送る。
+  repeated string address = 2;
+}
+
+// 名前サービスからの応答。
+message NameResponse {
   string service_name = 1;
   repeated string address = 2;
 }
-message NameResponse{
-  string service_name = 1;
-  repeated string address = 2;
-}
-service  Name {
-  // 注册
+
+// 名前サービス本体。インメモリのレジストリに対する CRUD に近い操作を提供する。
+service Name {
+  // 登録: サービス名とアドレスの対応をストアに追加する。
   rpc Register(NameRequest) returns (NameResponse) {}
-  // 删除
+  // 削除: 指定に応じたエントリの削除（実装はサーバー側に依存）。
   rpc Delete(NameRequest) returns (NameResponse) {}
-  // 保活
-  rpc Keepalive(stream NameRequest) returns (NameResponse){}
-  // 获取
-  rpc GetAddress (NameRequest) returns(NameResponse){}
+  // 保活: ストリームでハートビート的に接続を維持しつつ情報を更新する想定。
+  rpc Keepalive(stream NameRequest) returns (NameResponse) {}
+  // 取得: サービス名に対応するアドレス一覧を返す。クライアントのカスタム resolver が利用する。
+  rpc GetAddress (NameRequest) returns (NameResponse) {}
 }
