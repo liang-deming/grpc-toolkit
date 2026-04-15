@@ -1,4 +1,4 @@
-# grpcv2
+# grpc-toolkit
 
 [gRPC](https://grpc.io/) の学習・検証用の Go ワークスペースです。**Echo** サービス（Unary とストリーミング）、**インメモリの名前サービス**によるサービス発見、**mTLS**、**OAuth2 風の Per-RPC 資格情報**、**インターセプタ**、**HTTP/2 keepalive**、**カスタム name resolver**、簡易な **クライアント接続プール** を含みます。
 
