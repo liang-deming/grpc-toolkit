@@ -1,3 +1,9 @@
 .aider*
 *.png
 *.jpg
+
+# TLS certificates and private keys (generated locally)
+x509/*.pem
+
+# Local helper binaries
+*.exe
