@@ -1,4 +1,4 @@
-# grpcv2
+# grpc-toolkit
 
 A Go sample workspace demonstrating [gRPC](https://grpc.io/) patterns: an **Echo** service (unary and streaming RPCs), a small **in-memory name service** for service discovery, **mTLS**, **OAuth2-style per-RPC credentials**, **interceptors**, **HTTP/2 keepalive**, a **custom name resolver**, and a simple **client connection pool**.
 
